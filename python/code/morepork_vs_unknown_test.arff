@@ -1,0 +1,15 @@
+%% mel_spectrogram data of audio using
+%% librosa.feature.melspectrogram(y=y, n_mels=10, fmin=800,fmax=1000)
+%% i.e. 10 mell bands, min freq 800 Hz, max freq 1000 - the Classic more-pork call freq range
+%% 1.5 seconds of data
+
+@relation morepork_vs_unknown
+@attribute filename string
+@attribute class {MOREPORK, UNKNOWN}
+
+@data
+/morepork/281912_2.4.jpg,?
+/morepork/245591_51.8.jpg,?
+/morepork/193319_37.5.jpg,?
+/morepork/195470_5.7.jpg,?
+/morepork/299254_7.2.jpg,?

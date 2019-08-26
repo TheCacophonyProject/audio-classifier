@@ -1,0 +1,6 @@
+@relation morepork_vs_not_morepork
+@attribute filename string
+@attribute class {YES,NO}
+@data
+/yes/tim1.jpg, YES
+/no/tim2.jpg, NO

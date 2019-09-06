@@ -1,2 +1,2 @@
 # audio-classifier
-test12222222222
+This is currently being used to keep a track of intial development work.  It will be very messy for a while.

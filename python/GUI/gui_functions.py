@@ -491,6 +491,7 @@ def test_get_and_store_tag_information_for_recording():
     get_and_store_tag_information_for_recording(str(197294), 123)
     
 def insert_tag_into_database(recording_id,server_Id, what, detail, confidence, startTime, duration, automatic, version, createdAt, tagger_username, deviceId, device_name, device_super_name ):
+    # Use this for tags that have been downloaded from the server
     try:
         if check_if_tag_alredy_in_database(server_Id) == True:
             print('tag exists')
@@ -502,6 +503,19 @@ def insert_tag_into_database(recording_id,server_Id, what, detail, confidence, s
                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
         cur = get_database_connection().cursor()
         cur.execute(sql, (recording_id,server_Id, what, detail, confidence, startTime, duration, automatic, version, createdAt, tagger_username, deviceId, device_name, device_super_name))
+        get_database_connection().commit()
+    except Exception as e:
+        print(e, '\n')
+        print('\t\tUnable to insert tag ' + str(recording_id), '\n')   
+        
+def insert_locally_created_tag_into_database(recording_id,what, detail, confidence, startTime, duration, createdAt, tagger_username, deviceId, device_name, device_super_name ):
+    # Use this is the tag was created in this application, rather than being downloaded from the server - becuase some fiels are mission e.g. server_Id
+    try:        
+
+        sql = ''' INSERT INTO tags(recording_id, what, detail, confidence, startTime, duration, createdAt, tagger_username, deviceId, device_name, device_super_name)
+                  VALUES(?,?,?,?,?,?,?,?,?,?,?) '''
+        cur = get_database_connection().cursor()
+        cur.execute(sql, (recording_id, what, detail, confidence, startTime, duration, createdAt, tagger_username, deviceId, device_name, device_super_name))
         get_database_connection().commit()
     except Exception as e:
         print(e, '\n')
@@ -577,4 +591,85 @@ def scan_local_folder_for_recordings_not_in_local_db_and_update(device_name, dev
 def test_scan_local_folder_for_recordings_not_in_local_db_and_update():
     scan_local_folder_for_recordings_not_in_local_db_and_update('grants shed')
            
-       
+def create_tags_from_folder_of_unknown_images():
+    # This will probably only get used to recreate the unknown tags from the unknown images - as I'm not sure where the text file of this is/exists
+    home = str(Path.home())
+    unknown_images_folder =  home + '/Work/Cacophony/images/unknown'
+    for filename in os.listdir(unknown_images_folder):
+        fileparts = filename.replace('_','.').split('.')
+        recording_id = fileparts[0]
+        print('recording_id ', recording_id)
+        startWholeSecond = fileparts[1]
+        print('startWholeSecond ', startWholeSecond)
+        startPartSecond = fileparts[2]
+        print('startPartSecond ', startPartSecond)
+        startTimeSeconds = startWholeSecond + '.' + startPartSecond
+        insert_locally_created_tag_into_database(recording_id=recording_id, what='unknown', detail=None, confidence=None, startTime=startTimeSeconds, duration=1.5, createdAt='2019-06-20T05:39:28.391Z', tagger_username='timhot', deviceId=378, device_name='fpF7B9AFNn6hvfVgdrJB', device_super_name='Hammond Park')
+    print('Finished creating unknown tags from image files')
+    
+def test_create_tags_from_folder_of_unknown_images():
+    create_tags_from_folder_of_unknown_images()
+    
+def update_local_tags_with_version():
+    # This is probably only used the once to modify intial rows to indicate they are from my first morepork tagging of Hammond Park
+    cur = get_database_connection().cursor()
+    cur.execute("select ID from tags")
+ 
+    rows = cur.fetchall()     
+ 
+    for row in rows:              
+        ID =  row[0] 
+        print('ID ', ID) 
+        sql = ''' UPDATE tags
+                  SET version = ?               
+                  WHERE ID = ?'''
+        cur = get_database_connection().cursor()
+        cur.execute(sql, ('morepork_base', ID))
+    
+    get_database_connection().commit()    
+    
+def test_update_local_tags_with_version():
+    update_local_tags_with_version()
+    
+def create_clips(device_super_name, what, version, clips_ouput_folder):
+    print(device_super_name, what, version, clips_ouput_folder) 
+    
+    create_folder(clips_ouput_folder)
+    
+    sql = ''' SELECT recording_Id FROM tags WHERE device_super_name=? AND what=? AND version=? '''          
+    cur = get_database_connection().cursor()
+    cur.execute(sql, (device_super_name, what, version,)) 
+    rows = cur.fetchall()   
+ 
+    for row in rows: 
+        recording_Id = row[0]
+        create_wav_clip(recording_Id)        
+    
+def create_wav_clip(recording_Id):
+    print(recording_Id)
+    audio_in_file = getRecordingsFolder() + '/' + str(recording_Id) + '.m4a'
+    print(audio_in_file)
+    if not os.path.exists(audio_in_file):
+        print('Can not find ', audio_in_file)
+    else:
+        print('Found it')
+        
+    
+     
+        
+def create_folder(folder_to_create):
+    if folder_to_create is None:
+        print("Please enter a folder name")
+        return
+    if not folder_to_create:
+        print("Please enter a folder name")
+        return
+    
+    if not os.path.exists(folder_to_create):
+        os.mkdir(folder_to_create)
+        print("Folder " , folder_to_create ,  " Created ")    
+    
+      
+    
+      
+    

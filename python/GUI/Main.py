@@ -38,7 +38,7 @@ class Main_GUI(tk.Tk):
        
         self.frames = {}
         
-        for F in (HomePage, SettingsPage, RecordingsPage, TaggingPage):
+        for F in (HomePage, SettingsPage, RecordingsPage, TaggingPage, ClipsPage):
         
             frame = F(container, self)
             self.frames[F] = frame
@@ -62,17 +62,21 @@ class HomePage(tk.Frame):
         label = tk.Label(self, text="Home Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
         
-        button1 = ttk.Button(self, text="Settings",
+        settings_button = ttk.Button(self, text="Settings",
                             command=lambda: controller.show_frame(SettingsPage))    
-        button1.pack()
+        settings_button.pack()
         
         tagging_button = ttk.Button(self, text="Tagging",
                             command=lambda: controller.show_frame(TaggingPage))        
         tagging_button.pack()
         
-        button2 = ttk.Button(self, text="Recordings Page",
+        recordings_button = ttk.Button(self, text="Recordings Page",
                             command=lambda: controller.show_frame(RecordingsPage))        
-        button2.pack()
+        recordings_button.pack()
+        
+        clips_button = ttk.Button(self, text="Clips Page",
+                            command=lambda: controller.show_frame(ClipsPage))        
+        clips_button.pack()
         
 class SettingsPage(tk.Frame):
     
@@ -166,7 +170,39 @@ class RecordingsPage(tk.Frame):
         back_to_home_button = ttk.Button(self, text="Back to Home",
                             command=lambda: controller.show_frame(HomePage)).grid(column=0, columnspan=1, row=6)
         
+class ClipsPage(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        title_label = ttk.Label(self, text="Clips Page", font=LARGE_FONT)
+#         label.pack(pady=10,padx=10)
+        title_label.grid(column=0, columnspan=1, row=0)        
+              
+        device_super_name_label = ttk.Label(self, text="Device Super name (e.g. Hammond Park)").grid(column=0, columnspan=1, row=1)        
+        device_super_name = StringVar(value='Hammond Park')
+        device_super_name_entry = tk.Entry(self,  textvariable=device_super_name, width=30).grid(column=1, columnspan=1,row=1)
+        
+        what_label = ttk.Label(self, text="What (e.g. more pork - classic)").grid(column=0, columnspan=1, row=2)        
+        what = StringVar(value='more pork - classic')
+        what_entry = tk.Entry(self,  textvariable=what, width=30).grid(column=1, columnspan=1,row=2)
+        
+        version_label = ttk.Label(self, text="What (e.g. morepork_base)").grid(column=0, columnspan=1, row=3)        
+        version = StringVar(value='morepork_base')
+        version_entry = tk.Entry(self,  textvariable=version, width=30).grid(column=1, columnspan=1,row=3)
+        
+        clips_ouput_folder_label = ttk.Label(self, text="Output (sub)folder where clips will be created (e.g. audio_clips in some local folder)").grid(column=0, columnspan=1, row=4)        
+#         clips_ouput_folder = StringVar(value='audio_clips')
+        clips_ouput_folder = StringVar(value='/media/tim/HDD1/Work/Cacophony/Audio Analysis/clips_created_by_cacophony_audio_manager/audio_clips')
+        clips_ouput_folder_entry = tk.Entry(self,  textvariable=clips_ouput_folder, width=110).grid(column=1, columnspan=1,row=4) 
+        
+        
+        create_clips_button = ttk.Button(self, text="Create Clips",
+                            command=lambda: gui_functions.create_clips(device_super_name.get(), what.get(), version.get(), clips_ouput_folder.get())).grid(column=0, columnspan=2, row=5)
 
+        
+        back_to_home_button = ttk.Button(self, text="Back to Home",
+                            command=lambda: controller.show_frame(HomePage)).grid(column=0, columnspan=1, row=6)
+        
                 
         
 app = Main_GUI()

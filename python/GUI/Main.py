@@ -38,7 +38,7 @@ class Main_GUI(tk.Tk):
        
         self.frames = {}
         
-        for F in (HomePage, SettingsPage, RecordingsPage, TaggingPage, ClipsPage):
+        for F in (HomePage, SettingsPage, RecordingsPage, TaggingPage, ClipsPage, ArffPage):
         
             frame = F(container, self)
             self.frames[F] = frame
@@ -77,6 +77,10 @@ class HomePage(tk.Frame):
         clips_button = ttk.Button(self, text="Clips Page",
                             command=lambda: controller.show_frame(ClipsPage))        
         clips_button.pack()
+        
+        arff_button = ttk.Button(self, text="Arff Page",
+                            command=lambda: controller.show_frame(ArffPage))        
+        arff_button.pack()
         
 class SettingsPage(tk.Frame):
     
@@ -186,24 +190,60 @@ class ClipsPage(tk.Frame):
         what = StringVar(value='more pork - classic')
         what_entry = tk.Entry(self,  textvariable=what, width=30).grid(column=1, columnspan=1,row=2)
         
-        version_label = ttk.Label(self, text="What (e.g. morepork_base)").grid(column=0, columnspan=1, row=3)        
+        version_label = ttk.Label(self, text="Versions (e.g. morepork_base)").grid(column=0, columnspan=1, row=3)        
         version = StringVar(value='morepork_base')
         version_entry = tk.Entry(self,  textvariable=version, width=30).grid(column=1, columnspan=1,row=3)
         
-        clips_ouput_folder_label = ttk.Label(self, text="Output (sub)folder where clips will be created (e.g. audio_clips in some local folder)").grid(column=0, columnspan=1, row=4)        
-#         clips_ouput_folder = StringVar(value='audio_clips')
-        clips_ouput_folder = StringVar(value='/media/tim/HDD1/Work/Cacophony/Audio Analysis/clips_created_by_cacophony_audio_manager/audio_clips')
-        clips_ouput_folder_entry = tk.Entry(self,  textvariable=clips_ouput_folder, width=110).grid(column=1, columnspan=1,row=4) 
+        run_base_folder_label = ttk.Label(self, text="Base folder for output (e.g. /home/tim/Work/Cacophony/Audio_Analysis/audio_classifier_runs)").grid(column=0, columnspan=1, row=4)        
+        run_base_folder_folder = StringVar(value='/home/tim/Work/Cacophony/Audio_Analysis/audio_classifier_runs')
+        run_base_folder_entry = tk.Entry(self,  textvariable=run_base_folder_folder, width=110).grid(column=1, columnspan=1,row=4) 
+        
+        run_folder_label = ttk.Label(self, text="Output (sub)folder where clips will be created (e.g. 2019_09_17_1).").grid(column=0, columnspan=1, row=5)    
+        run_folder = StringVar(value='2019_09_17_1')
+        run_folder_entry = tk.Entry(self,  textvariable=run_folder, width=110).grid(column=1, columnspan=1,row=5) 
         
         
         create_clips_button = ttk.Button(self, text="Create Clips",
-                            command=lambda: gui_functions.create_clips(device_super_name.get(), what.get(), version.get(), clips_ouput_folder.get())).grid(column=0, columnspan=2, row=5)
+                            command=lambda: gui_functions.create_clips(device_super_name.get(), what.get(), version.get(), run_base_folder_folder.get(),run_folder.get() )).grid(column=0, columnspan=2, row=6)
 
         
         back_to_home_button = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(HomePage)).grid(column=0, columnspan=1, row=6)
+                            command=lambda: controller.show_frame(HomePage)).grid(column=0, columnspan=1, row=7)
         
-                
+class ArffPage(tk.Frame):
+    
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        title_label = ttk.Label(self, text="Create Arff Page", font=LARGE_FONT)
+#         label.pack(pady=10,padx=10)
+        title_label.grid(column=0, columnspan=1, row=0)    
+        
+        base_folder_label = ttk.Label(self, text="Base folder (e.g. /home/tim/Work/Cacophony/Audio_Analysis/audio_classifier_runs)").grid(column=0, columnspan=1, row=1)        
+        base_folder = StringVar(value='/home/tim/Work/Cacophony/Audio_Analysis/audio_classifier_runs')
+        base_folder_entry = tk.Entry(self,  textvariable=base_folder, width=110).grid(column=1, columnspan=1,row=1)    
+        
+        run_folder_label = ttk.Label(self, text="Run folder (e.g. 2019_09_17_1)").grid(column=0, columnspan=1, row=2)    
+        run_folder = StringVar(value='2019_09_17_1')
+        run_folder_entry = tk.Entry(self,  textvariable=run_folder, width=110).grid(column=1, columnspan=1,row=2) 
+        
+        clip_folder_label = ttk.Label(self, text="Clip folder (e.g. morepork-classic)").grid(column=0, columnspan=1, row=3)    
+        clip_folder = StringVar(value='more pork - classic')
+        clip_folder_entry = tk.Entry(self,  textvariable=clip_folder, width=110).grid(column=1, columnspan=1,row=3)  
+              
+        openSmile_config_file_label = ttk.Label(self, text="Name of openSMILE configuration file (e.g. morepork_unknown_label_morpork.conf) in Run Folder").grid(column=0, columnspan=1, row=4)        
+        openSmile_config_file = StringVar(value='morepork_unknown_label_morpork.conf')
+        openSmile_config_file_entry = tk.Entry(self,  textvariable=openSmile_config_file, width=30).grid(column=1, columnspan=1,row=4)
+        
+        arff_template_file_label = ttk.Label(self, text="Name of openSMILE template arff file (e.g. arff_template.mfcc.arff)").grid(column=0, columnspan=1, row=5)        
+        arff_template_file = StringVar(value='arff_template.mfcc.arff')
+        arff_template_file_entry = tk.Entry(self,  textvariable=arff_template_file, width=30).grid(column=1, columnspan=1,row=5)
+        
+        create_arff_button = ttk.Button(self, text="Create Arff File",
+                            command=lambda: gui_functions.create_arff_file(base_folder.get(), run_folder.get(), clip_folder.get(), openSmile_config_file.get(), arff_template_file.get())).grid(column=0, columnspan=2, row=6)
+
+        
+        back_to_home_button = ttk.Button(self, text="Back to Home",
+                            command=lambda: controller.show_frame(HomePage)).grid(column=0, columnspan=1, row=7)                
         
 app = Main_GUI()
 app.mainloop() 

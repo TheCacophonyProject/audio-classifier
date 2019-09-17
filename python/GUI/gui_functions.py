@@ -1,8 +1,4 @@
-'''
-Created on 5 Sep 2019
 
-@author: tim
-'''
 import sqlite3
 from sqlite3 import Error
 import requests
@@ -13,8 +9,43 @@ from pathlib import Path
 from tkinter import filedialog
 from tkinter import *
 import re
+from scipy.io import wavfile
+import shutil
+# import scikits.audiolab
+# import sckikits as sc
+# 
+# from sc import Sndfile, Format
 
 import parameters
+
+
+import glob
+
+import numpy as np
+import soundfile as sf
+import librosa
+
+# from soundfile import SoundFile
+
+# import scipy.io
+# 
+# import wavio
+# from code.Analysis import what
+# 
+# ffmpegEXE = 'ffmpeg'  # or ffmpeg.exe on windows etc
+# import subprocess as sp
+# 
+# from pydub import AudioSegment
+# from scipy.io.wavfile import read
+
+
+#path to configs
+# sys.path.append('/home/jonah/Documents/opensmile-2.3.0/config/')
+sys.path.append('/home/tim/opensmile-2.3.0/config/')
+#path to input files
+search_path = '/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput'
+#path to where we want the output
+arff_path = '/home/tim/Work/Cacophony/opensmile_weka/TestAudioOutput'
 
 
 db_file = "audio_analysis_db"
@@ -631,30 +662,45 @@ def update_local_tags_with_version():
 def test_update_local_tags_with_version():
     update_local_tags_with_version()
     
-def create_clips(device_super_name, what, version, clips_ouput_folder):
-    print(device_super_name, what, version, clips_ouput_folder) 
+# def create_clips(device_super_name, what, version, clips_ouput_folder):
+def create_clips(device_super_name, what, version, run_base_folder, run_folder):
+#     print(device_super_name, what, version, clips_ouput_folder) 
+    what_without_spaces = re.sub(' ', '_', what)
+    clips_ouput_folder = run_base_folder + '/' + run_folder + '/' + 'audio_clips' + '/' + what_without_spaces
+#     create_folder(clips_ouput_folder) 
     
-    create_folder(clips_ouput_folder)
-    
-    sql = ''' SELECT recording_Id FROM tags WHERE device_super_name=? AND what=? AND version=? '''          
+    sql = ''' SELECT recording_Id, startTime, duration FROM tags WHERE device_super_name=? AND what=? AND version=? '''          
     cur = get_database_connection().cursor()
     cur.execute(sql, (device_super_name, what, version,)) 
-    rows = cur.fetchall()   
+    rows = cur.fetchall()  
+    
+    count = 0
  
     for row in rows: 
+        print('Creating clip ', count, ' of ', len(rows))
         recording_Id = row[0]
-        create_wav_clip(recording_Id)        
+        start_time_seconds = row[1]
+        duration_seconds = row[2]
+        create_wav_clip(recording_Id, start_time_seconds, duration_seconds, clips_ouput_folder)   
+        count = count + 1     
     
-def create_wav_clip(recording_Id):
+def create_wav_clip(recording_Id, start_time_seconds, duration_seconds, clips_ouput_folder):
     print(recording_Id)
-    audio_in_file = getRecordingsFolder() + '/' + str(recording_Id) + '.m4a'
-    print(audio_in_file)
-    if not os.path.exists(audio_in_file):
-        print('Can not find ', audio_in_file)
-    else:
-        print('Found it')
-        
+    audio_in_path = getRecordingsFolder() + '/' + str(recording_Id) + '.m4a'
+#     audio_out_folder = getRecordingsFolder() + '/' + what
+    if not os.path.exists(clips_ouput_folder):
+#         os.mkdir(clips_ouput_folder)
+        os.makedirs(clips_ouput_folder)    
     
+    audio_out_path = clips_ouput_folder + '/' + str(recording_Id) + '_' + str(start_time_seconds) + '_' + str(duration_seconds) + '.wav'
+#     print('audio_in_path ', audio_in_path)
+#     print('audio_out_path ', audio_out_path)
+#     if not os.path.exists(audio_in_path):
+#         print('Can not find ', audio_in_path)
+#     else:
+#         print('Found it')
+        
+    create_wav(audio_in_path, audio_out_path, start_time_seconds, duration_seconds)
      
         
 def create_folder(folder_to_create):
@@ -670,6 +716,161 @@ def create_folder(folder_to_create):
         print("Folder " , folder_to_create ,  " Created ")    
     
       
+
+
+            
+def run_processDir():
+    processDir(search_path,arff_path)
     
-      
+    
+def create_wav(audio_in_path, audio_out_path, start_time_seconds, duration_seconds): 
+    print('start_time_seconds ', start_time_seconds) 
+    print('duration_seconds ', duration_seconds)  
+    y, sr = librosa.load(audio_in_path) 
+    
+    clip_start_array = int((sr * start_time_seconds))
+    print('clip_start_array ', clip_start_array)
+    clip_end_array = clip_start_array + int((sr * duration_seconds))    
+ 
+     
+    if clip_end_array > y.shape[0]:
+        print('Clip would end after end of recording')
+        return
+     
+    clip_call_by_array = y[clip_start_array:clip_end_array]  
+     
+     
+ 
+     
+    #Save the file 
+#     wavfile.write(filename=audio_out_path, rate=sr, data=clip_call_by_array)
+#     sf.write(file, data, samplerate, subtype, endian, format, closefd)
+#     sf.write(file=audio_out_path, data=clip_call_by_array, samplerate=sr, subtype, endian, format, closefd)
+    # https://pysoundfile.readthedocs.io/en/0.9.0/
+    sf.write(audio_out_path, clip_call_by_array, sr, 'PCM_24')
+#     sf.write(audio_out_path, y, sr, 'PCM_24')      
+    
+
+#     run_processDir()
+
+
+def test_create_wav():
+    create_wav('/home/tim/Work/Cacophony/opensmile_weka/m4a_files/161945.m4a', '/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/161945.wav')  
+    create_wav('/home/tim/Work/Cacophony/opensmile_weka/m4a_files/161946.m4a', '/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/161946.wav')  
+    processDir(search_path,arff_path)
+    
+        
+    
+
+
+
+        
+def create_arff_file(base_folder, run_folder, clip_folder, openSmile_config_file, arff_template_file):
+    clip_folder_without_spaces = re.sub(' ', '_', clip_folder)
+    print('base_folder ', base_folder)
+    cwd = os.getcwd()
+       
+    openSmile_config_file_template = cwd + '/template_files/' + openSmile_config_file
+    openSmile_config_file_for_this_run = base_folder + '/' + run_folder + '/' + openSmile_config_file
+    shutil.copy2(openSmile_config_file_template, openSmile_config_file_for_this_run)
+    
+    arff_template_file_path = cwd + '/template_files/' + arff_template_file
+    arff_template_file_for_this_run = base_folder + '/' + run_folder + '/' + arff_template_file
+    shutil.copy2(arff_template_file_path, arff_template_file_for_this_run)
+    
+    print('clip_folder', clip_folder_without_spaces)
+   
+    
+    searchDir = base_folder + '/' + run_folder + '/audio_clips/' + clip_folder_without_spaces
+    arffDir = base_folder + '/' + run_folder + '/arff_files' 
+    if not os.path.exists(arffDir):
+        os.mkdir(arffDir)
+    
+    print('searchDir', searchDir)
+    print('arffDir', arffDir)
+    
+    processDir(searchDir, arffDir, openSmile_config_file_for_this_run)
+    
+# First version written by Jonah Dearden
+def processDir( searchDir, arffDir, openSmile_config_file_for_this_run):
+    print('openSmile_config_file_for_this_run ', openSmile_config_file_for_this_run)
+    
+    os.chdir(searchDir)
+    i=0
+    list_of_files=[]
+    # https://www.tutorialspoint.com/python/os_walk.htm
+    for root,dir,files in os.walk(searchDir):
+        for f in files:
+            if re.match(r'.*\.wav',f):
+                list_of_files.append(root+'/'+f)
+                
+    os.chdir(arffDir)
+    
+    for i in list_of_files: 
+        print(i)
+    
+    print('openSmile_config_file_for_this_run ', openSmile_config_file_for_this_run)
+    
+    for i in list_of_files:        
+        #path to input files
+#         name1=re.sub(r'(/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/)(.*)(\.wav)',r'\2',i)
+        name1=re.sub(r'(' + searchDir + '/)(.*)(\.wav)',r'\2',i)
+        print('name1 ', name1)
+#         name1=re.sub(r'/','',name1)
+#         print('name1 ', name1)
+        #path to config we will use
+#         os.system('SMILExtract -C /home/jonah/git/BirdRepo/AudioFeatures/WavToArff/emobaseM.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/emobaseBirdTim1.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/emobaseBird.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/morepork_unknown.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+        os.system('SMILExtract -C ' + openSmile_config_file_for_this_run + ' -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+ 
+# First version written by Jonah Dearden
+# def processDir(searchDir, arffDir):
+#     os.chdir(searchDir)
+#     i=0
+#     list_of_files=[]
+#     for root,dir,files in os.walk(search_path):
+#         for f in files:
+#             if re.match(r'.*\.wav',f):
+#                 list_of_files.append(root+'/'+f)
+#                 
+#     os.chdir(arffDir)
+#     
+#     
+#     for i in list_of_files:        
+#         #path to input files
+#         name1=re.sub(r'(/home/jonah/birdAudio/TestAudioInput/)(.*)(\.wav)',r'\2',i)
+#         name1=re.sub(r'/','',name1)
+#         #path to config we will use
+#         os.system('SMILExtract -C /home/jonah/git/BirdRepo/AudioFeatures/WavToArff/emobaseM.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
+#         
+#         
+# processDir(search_path,arff_path)
+       
+def merge_arffs():
+    #path to directory with affs
+    os.chdir('/home/tim/Work/Cacophony/opensmile_weka/TestAudioOutput')
+    #Path to the arff we are going to be appending the data to
+    basearff = "base.mfcc.arff"
+    counter = 0
+
+    #Opens joinedArff.arff and appends
+    with open(basearff, "a") as f:
+        #for each file with the .arff ext in the directroy
+        for file in glob.glob("*.arff"):
+            #Open the file and read line 996
+            print(file)
+            a = open(file, "r")
+            lines = a.readlines()
+    
+            x = lines[995]
+            #Replace class label if necessary
+            #This is unnecessary if you have already assigned the classes using the OpenSmile conf.
+            #x = x.replace("unknown", "person")
+            #Writes that line to the joinedArff file
+            f.write(x + "\n")
+            a.close()
+    
+    f.close()            
     

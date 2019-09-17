@@ -664,25 +664,26 @@ def test_update_local_tags_with_version():
     
 # def create_clips(device_super_name, what, version, clips_ouput_folder):
 def create_clips(device_super_name, what, version, run_base_folder, run_folder):
-#     print(device_super_name, what, version, clips_ouput_folder) 
-    what_without_spaces = re.sub(' ', '_', what)
-    clips_ouput_folder = run_base_folder + '/' + run_folder + '/' + 'audio_clips' + '/' + what_without_spaces
-#     create_folder(clips_ouput_folder) 
-    
-    sql = ''' SELECT recording_Id, startTime, duration FROM tags WHERE device_super_name=? AND what=? AND version=? '''          
-    cur = get_database_connection().cursor()
-    cur.execute(sql, (device_super_name, what, version,)) 
-    rows = cur.fetchall()  
-    
-    count = 0
- 
-    for row in rows: 
-        print('Creating clip ', count, ' of ', len(rows))
-        recording_Id = row[0]
-        start_time_seconds = row[1]
-        duration_seconds = row[2]
-        create_wav_clip(recording_Id, start_time_seconds, duration_seconds, clips_ouput_folder)   
-        count = count + 1     
+    print(device_super_name, what, version, run_base_folder, run_folder) 
+#     what_without_spaces = re.sub(' ', '', what)
+#     what_without_spaces_dashes = re.sub('-', '_', what_without_spaces) 
+#     clips_ouput_folder = run_base_folder + '/' + run_folder + '/' + 'audio_clips' + '/' + what_without_spaces_dashes
+# 
+#     
+#     sql = ''' SELECT recording_Id, startTime, duration FROM tags WHERE device_super_name=? AND what=? AND version=? '''          
+#     cur = get_database_connection().cursor()
+#     cur.execute(sql, (device_super_name, what, version,)) 
+#     rows = cur.fetchall()  
+#     
+#     count = 0
+#  
+#     for row in rows: 
+#         print('Creating clip ', count, ' of ', len(rows))
+#         recording_Id = row[0]
+#         start_time_seconds = row[1]
+#         duration_seconds = row[2]
+#         create_wav_clip(recording_Id, start_time_seconds, duration_seconds, clips_ouput_folder)   
+#         count = count + 1     
     
 def create_wav_clip(recording_Id, start_time_seconds, duration_seconds, clips_ouput_folder):
     print(recording_Id)
@@ -758,25 +759,20 @@ def test_create_wav():
     create_wav('/home/tim/Work/Cacophony/opensmile_weka/m4a_files/161945.m4a', '/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/161945.wav')  
     create_wav('/home/tim/Work/Cacophony/opensmile_weka/m4a_files/161946.m4a', '/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/161946.wav')  
     processDir(search_path,arff_path)
-    
-        
-    
-
-
 
         
-def create_arff_file(base_folder, run_folder, clip_folder, openSmile_config_file, arff_template_file):
+def create_arff_file(base_folder, run_folder, clip_folder, openSmile_config_file):
     clip_folder_without_spaces = re.sub(' ', '_', clip_folder)
     print('base_folder ', base_folder)
     cwd = os.getcwd()
        
-    openSmile_config_file_template = cwd + '/template_files/' + openSmile_config_file
+    openSmile_config_file_template = cwd + '/template_files/openSmile_config_files/' + openSmile_config_file
     openSmile_config_file_for_this_run = base_folder + '/' + run_folder + '/' + openSmile_config_file
     shutil.copy2(openSmile_config_file_template, openSmile_config_file_for_this_run)
     
-    arff_template_file_path = cwd + '/template_files/' + arff_template_file
-    arff_template_file_for_this_run = base_folder + '/' + run_folder + '/' + arff_template_file
-    shutil.copy2(arff_template_file_path, arff_template_file_for_this_run)
+#     arff_template_file_path = cwd + '/template_files/' + arff_template_file
+#     arff_template_file_for_this_run = base_folder + '/' + run_folder + '/' + arff_template_file
+#     shutil.copy2(arff_template_file_path, arff_template_file_for_this_run)
     
     print('clip_folder', clip_folder_without_spaces)
    
@@ -811,52 +807,27 @@ def processDir( searchDir, arffDir, openSmile_config_file_for_this_run):
     
     print('openSmile_config_file_for_this_run ', openSmile_config_file_for_this_run)
     
-    for i in list_of_files:        
-        #path to input files
-#         name1=re.sub(r'(/home/tim/Work/Cacophony/opensmile_weka/TestAudioInput/)(.*)(\.wav)',r'\2',i)
+    for i in list_of_files:     
         name1=re.sub(r'(' + searchDir + '/)(.*)(\.wav)',r'\2',i)
-        print('name1 ', name1)
-#         name1=re.sub(r'/','',name1)
-#         print('name1 ', name1)
-        #path to config we will use
-#         os.system('SMILExtract -C /home/jonah/git/BirdRepo/AudioFeatures/WavToArff/emobaseM.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
-#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/emobaseBirdTim1.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
-#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/emobaseBird.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
-#         os.system('SMILExtract -C /home/tim/Work/Cacophony/opensmile_weka/config/morepork_unknown.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
         os.system('SMILExtract -C ' + openSmile_config_file_for_this_run + ' -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
  
-# First version written by Jonah Dearden
-# def processDir(searchDir, arffDir):
-#     os.chdir(searchDir)
-#     i=0
-#     list_of_files=[]
-#     for root,dir,files in os.walk(search_path):
-#         for f in files:
-#             if re.match(r'.*\.wav',f):
-#                 list_of_files.append(root+'/'+f)
-#                 
-#     os.chdir(arffDir)
-#     
-#     
-#     for i in list_of_files:        
-#         #path to input files
-#         name1=re.sub(r'(/home/jonah/birdAudio/TestAudioInput/)(.*)(\.wav)',r'\2',i)
-#         name1=re.sub(r'/','',name1)
-#         #path to config we will use
-#         os.system('SMILExtract -C /home/jonah/git/BirdRepo/AudioFeatures/WavToArff/emobaseM.conf -I '+i+' -O '+arffDir+'/'+name1+'.mfcc.arff')
-#         
-#         
-# processDir(search_path,arff_path)
+
        
-def merge_arffs():
-    #path to directory with affs
-    os.chdir('/home/tim/Work/Cacophony/opensmile_weka/TestAudioOutput')
-    #Path to the arff we are going to be appending the data to
-    basearff = "base.mfcc.arff"
+def merge_arffs(base_folder, run_folder, arff_template_file):
+    #path to directory with arffs
+    arffDir = base_folder + '/' + run_folder + '/arff_files'
+    arrf_filename = re.sub('_template', '', arff_template_file)
+    cwd = os.getcwd()
+    arff_template_file_path = cwd + '/template_files/arff_template_files/' + arff_template_file
+    arff_template_file_for_this_run = base_folder + '/' + run_folder + '/arff_files/' + arrf_filename
+    shutil.copy2(arff_template_file_path, arff_template_file_for_this_run)
+    
+    os.chdir(arffDir)
+    
     counter = 0
 
     #Opens joinedArff.arff and appends
-    with open(basearff, "a") as f:
+    with open(arrf_filename, "a") as f:
         #for each file with the .arff ext in the directroy
         for file in glob.glob("*.arff"):
             #Open the file and read line 996
@@ -872,5 +843,55 @@ def merge_arffs():
             f.write(x + "\n")
             a.close()
     
-    f.close()            
+    f.close()   
+    
+    arff_template_file_for_this_run_in_run_folder = base_folder + '/' + run_folder + '/' + arrf_filename
+#     os.rename(arff_template_file_for_this_run, arff_template_file_for_this_run_in_run_folder)
+    shutil.move(arff_template_file_for_this_run, arff_template_file_for_this_run_in_run_folder)
+    
+    print('Merged arff file created in ', base_folder, '/',run_folder)
+    
+def get_unique_whats_from_local_db():
+    cur = get_database_connection().cursor()
+    cur.execute("SELECT DISTINCT what FROM tags") 
+    rows = cur.fetchall()  
+    
+    unique_whats = []
+    for row in rows:
+         unique_whats.append(row[0])
+    return unique_whats  
+
+def getOpenSmileConfigFiles():
+    cwd = os.getcwd()
+    openSmileConfigFileDir = cwd + '/template_files/openSmile_config_files/'
+    openSmileConfigFiles = []
+    for file in os.listdir(openSmileConfigFileDir):
+        openSmileConfigFiles.append(file)        
+   
+    return openSmileConfigFiles
+    
+def getArffTemplateFiles():
+    cwd = os.getcwd()
+    arrTemplateFileDir = cwd + '/template_files/arff_template_files/'
+
+    arffTemplateFiles = []
+    for file in os.listdir(arrTemplateFileDir):
+        arffTemplateFiles.append(file)        
+   
+    return arffTemplateFiles     
+
+
+
+def choose_clip_folder(base_folder, run_folder):
+    start_folder = base_folder + '/' + run_folder + '/audio_clips/'
+    clip_folder = filedialog.askdirectory(initialdir=start_folder,  title = "Open the folder you want (Just selecting it won't choose it)")
+    parts = re.split('/', clip_folder)
+    clip_folder =  parts[len(parts)-1]     
+    return clip_folder      
+
+   
+
+ 
+       
+       
     

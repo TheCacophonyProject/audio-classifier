@@ -27,7 +27,9 @@ import gui_functions
 
 # gui_functions.run_processDir()
 
-gui_functions.test_create_wav_and_arff()
+# gui_functions.test_create_wav_and_arff()
+# 
+# gui_functions.merge_arffs()
 
-gui_functions.merge_arffs()
+gui_functions.getOpenSmileConfigFiles()
 

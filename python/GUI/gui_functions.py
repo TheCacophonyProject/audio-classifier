@@ -767,7 +767,9 @@ def create_arff_file(base_folder, run_folder, clip_folder, openSmile_config_file
     cwd = os.getcwd()
        
     openSmile_config_file_template = cwd + '/template_files/openSmile_config_files/' + openSmile_config_file
+    print('openSmile_config_file_template ', openSmile_config_file_template)
     openSmile_config_file_for_this_run = base_folder + '/' + run_folder + '/' + openSmile_config_file
+    print('openSmile_config_file_for_this_run ', openSmile_config_file_for_this_run)
     shutil.copy2(openSmile_config_file_template, openSmile_config_file_for_this_run)
     
 #     arff_template_file_path = cwd + '/template_files/' + arff_template_file
@@ -876,6 +878,7 @@ def getArffTemplateFiles():
 
     arffTemplateFiles = []
     for file in os.listdir(arrTemplateFileDir):
+        print(file)
         arffTemplateFiles.append(file)        
    
     return arffTemplateFiles     

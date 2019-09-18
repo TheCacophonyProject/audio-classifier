@@ -249,35 +249,27 @@ class ArffPage(tk.Frame):
         run_folder = StringVar(value='2019_09_17_1')
         run_folder_entry = tk.Entry(self,  textvariable=run_folder, width=80).grid(column=1, columnspan=1,row=2) 
         
-#         clip_folder_label = ttk.Label(self, text="Clip folder (e.g. morepork-classic)").grid(column=0, columnspan=1, row=3)  
-#         choose_clip_folder_button = ttk.Button(self, text="Choose clip folder (e.g. morepork-classic",
-#                             command=lambda: gui_functions.choose_clip_folder(base_folder.get(), run_folder.get())).grid(column=0, columnspan=2, row=3)
+
         choose_clip_folder_button = ttk.Button(self, text="Choose clip folder",
                             command=lambda: self.choose_clip_folder(base_folder.get(), run_folder.get())).grid(column=0, columnspan=1, row=3)
-#         choose_clip_folder_button = ttk.Button(self, text="Choose clip folder (e.g. morepork-classic", command=lambda: self.tim_test()).grid(column=0, columnspan=2, row=3)          
-        
-          
-#         clip_folder = StringVar(value='morepork_classic')
         self.clip_folder_entry = tk.Entry(self,  textvariable=self.clip_folder, width=80).grid(column=1, columnspan=1,row=3)  
 
-
-        
-        
-              
+          
         openSmile_config_file_label = ttk.Label(self, text="Name of openSMILE configuration file (e.g. morepork_unknown_label_morpork.conf)").grid(column=0, columnspan=1, row=4)      
         openSmile_config_file = StringVar()
         openSmile_config_combo = ttk.Combobox(self, textvariable=openSmile_config_file, values=openSmile_config_files, width=80)
         openSmile_config_combo.current(0)
         openSmile_config_combo.grid(column=1, columnspan=2,row=4) 
         
-        arff_template_file_label = ttk.Label(self, text="Name of openSMILE template arff file (e.g. arff_template.mfcc.arff)").grid(column=0, columnspan=1, row=5)     
+        create_arff_button = ttk.Button(self, text="Create Individual Arff Files for each audio file",
+                            command=lambda: gui_functions.create_arff_file(base_folder.get(), run_folder.get(), self.clip_folder.get(), openSmile_config_file.get())).grid(column=0, columnspan=1, row=5)
+          
+        arff_template_file_label = ttk.Label(self, text="Name of openSMILE template arff file (e.g. arff_template.mfcc.arff)").grid(column=0, columnspan=1, row=6)     
         arff_template_file = StringVar()
         arff_template_combo = ttk.Combobox(self, textvariable=arff_template_file, values=arffTemplateFiles, width=80)
         arff_template_combo.current(0)
-        arff_template_combo.grid(column=1, columnspan=2,row=5)
+        arff_template_combo.grid(column=1, columnspan=2,row=6)
 
-        create_arff_button = ttk.Button(self, text="Create Individual Arff Files for each audio file",
-                            command=lambda: gui_functions.create_arff_file(base_folder.get(), run_folder.get(), self.clip_folder.get(), openSmile_config_file.get())).grid(column=0, columnspan=1, row=6)
         
         merge_arffs_button = ttk.Button(self, text="Merge Arffs",
                             command=lambda: gui_functions.merge_arffs(base_folder.get(), run_folder.get(), arff_template_file.get())).grid(column=0, columnspan=1, row=7)
